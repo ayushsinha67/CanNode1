@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
+#include "mcp2515reg.h"
 #include "mcp2515.h"
 #include "spi.h"
 #include "terminal.h"
@@ -49,7 +50,7 @@ void mcp2515_ReadRegs (const uint8_t address, uint8_t data[], const uint8_t n)
 /************************************************************************
  *	WRITE SINGLE REGISTER
  */
-void	mcp2515_Write ( const uint8_t address, const uint8_t data )
+void mcp2515_Write ( const uint8_t address, const uint8_t data )
 {
 	MCP2515_SELECT();
 	SPI_Write(WRITE);
@@ -61,7 +62,7 @@ void	mcp2515_Write ( const uint8_t address, const uint8_t data )
 /************************************************************************
  *	WRITE MULTIPLE REGISTER
  */
-void	mcp2515_WriteRegs (const uint8_t address, const uint8_t data[], const uint8_t n)
+void mcp2515_WriteRegs (const uint8_t address, const uint8_t data[], const uint8_t n)
 {	
 	MCP2515_SELECT();
 	SPI_Write(WRITE);
@@ -87,7 +88,7 @@ void mcp2515_BitModify ( const uint8_t address, const uint8_t mask, const uint8_
 }
 
 /************************************************************************
- *	READ RECEIVE BUFFER
+ *	READ/STORE RECEIVE BUFFER
  */
 void mcp2515_StrRXBUF ( const uint8_t buffer, uint8_t data[], const uint8_t n )
 {
@@ -158,7 +159,7 @@ uint8_t	mcp2515_RXStatus (void)
 /************************************************************************
  *	SET MODE
  */
-enum MCP2515_STATUS mcp2515_SetMode (const uint8_t mode)
+mcp2515Status mcp2515_SetMode (const uint8_t mode)
 {
 	uint8_t i;
 	
@@ -168,15 +169,15 @@ enum MCP2515_STATUS mcp2515_SetMode (const uint8_t mode)
 	i &= MODE_MASK;
 	
 	if ( i == mode ) 
-		return OK; 
+		return MCP2515_OK; 
 	else 
-		return FAILED;
+		return MCP2515_FAILED;
 }
 
 /************************************************************************
  *	CONFIGURATION RATE
  */
-enum MCP2515_STATUS mcp2515_ConfigRate (const uint16_t can_rate)
+mcp2515Status mcp2515_ConfigRate (const uint16_t can_rate)
 {
 	uint8_t BRP = ( F_OSC / ( 2 * 16 * can_rate ) ) - 1 ;	/* Baud Rate Prescalar */
 	
@@ -198,10 +199,10 @@ enum MCP2515_STATUS mcp2515_ConfigRate (const uint16_t can_rate)
 						  mcp2515_Write( CNF3, ( PHSEG2_1MBPS | SOF_ENABLE) );
 						  break;
 						  
-		default:		  return FAILED;		
+		default:		  return MCP2515_FAILED;		
 	}
 	
-	return OK;
+	return MCP2515_OK;
 }
 
 /************************************************************************
@@ -283,8 +284,8 @@ void mcp2515_WriteTxBuf ( const CanMessage *m, uint8_t addr )
 	if( m->ext == 0 ){									/* Standard Identifier */
 		buf[0] = (uint8_t) ( m->id >> 3 );
 		buf[1] = ( (uint8_t) m->id << 5 );
-		buf[2] = 0x00;
-		buf[3] = 0x00;		
+		buf[2] = 0;
+		buf[3] = 0;		
 	}
 	else{												/* Extended Identifier */	
 		buf[0] = (uint8_t) ( m->id >> 21 );
@@ -308,7 +309,7 @@ void mcp2515_WriteTxBuf ( const CanMessage *m, uint8_t addr )
 /************************************************************************
  *	READ RECEIVE BUFFER
  */
-void mcp2515_ReadRxBuf ( volatile CanMessage *m, uint8_t addr )
+void mcp2515_ReadRxBuf ( CanMessage *m, uint8_t addr )
 {
 	uint32_t temp;
 	uint8_t  buf[13];
@@ -345,9 +346,9 @@ void mcp2515_ReadRxBuf ( volatile CanMessage *m, uint8_t addr )
 /************************************************************************
  *	CHECK FREE TRANSMIT BUFFER
  */
-enum MCP2515_STATUS mcp2515_ChkFreeTxBuf ( uint8_t addr[] )
+mcp2515Status mcp2515_ChkFreeTxBuf ( uint8_t addr[] )
 {
-	/* [0] : load addr , [1] = rts addr */
+	/* [0] : load addr , [1] = RTS addr */
 	uint8_t status = mcp2515_ReadStatus();
 	
 	if	( ( status & TXB0_TXREQ_STATUS ) == 0 ) {						
@@ -363,24 +364,24 @@ enum MCP2515_STATUS mcp2515_ChkFreeTxBuf ( uint8_t addr[] )
 		addr[1] = RTS_TXB2;
 	}
 	else {	
-		return FAILED;		
+		return MCP2515_FAILED;		
 	}
-	return OK;
+	return MCP2515_OK;
 }
 
 /************************************************************************
  *	MCP2515 INITIALIZATION
  */
-enum MCP2515_STATUS mcp2515_Init (const uint8_t can_rate)
+mcp2515Status mcp2515_Init (const uint8_t can_rate)
 {
 	mcp2515_Reset();												/* Reset */ 
 	_delay_ms(1);													/* Settling time */
 	
-	if( mcp2515_SetMode ( MODE_CONFIG ) == FAILED )					/* Configuration Mode */
-		return FAILED;	
+	if( mcp2515_SetMode ( MODE_CONFIG ) == MCP2515_FAILED )					/* Configuration Mode */
+		return MCP2515_FAILED;	
 		
-	if( mcp2515_ConfigRate( can_rate ) == FAILED )  				/* Set CAN Speed */
-		return FAILED;
+	if( mcp2515_ConfigRate( can_rate ) == MCP2515_FAILED )  				/* Set CAN Speed */
+		return MCP2515_FAILED;
 	
 	mcp2515_ClrBuffers();											/* Clear Rx/Tx Buffers */
 	mcp2515_ConfigFilt();											/* Set Filters */
@@ -395,8 +396,8 @@ enum MCP2515_STATUS mcp2515_Init (const uint8_t can_rate)
 	mcp2515_Write( RXB1CTRL, RXB1_REC_ANY );						/* RXB1 Receive All */
 #endif
 
-	if ( mcp2515_SetMode( MODE_NORMAL ) == FAILED)					/* Normal Mode */
-		return FAILED;
+	if ( mcp2515_SetMode( MODE_NORMAL ) == MCP2515_FAILED)					/* Normal Mode */
+		return MCP2515_FAILED;
 
-	return OK;
+	return MCP2515_OK;
 }

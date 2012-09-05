@@ -6,7 +6,8 @@
 /************************************************************************
  *	ENUMERATIONS
  */
-enum TERM_STATE
+
+typedef enum									/* Terminal State */
 {
 	TERM_CANINIT = 0,
 	TERM_CTRLREG,
@@ -22,25 +23,28 @@ enum TERM_STATE
 	TERM_LOOPBACK,
 	TERM_HELP,
 	TERM_DISABLE	
-};
+	
+} TERM_STATE;
 
-enum CFG_STATE
+typedef enum									/* Configuration State */
 {
 	CFG_NORMAL = 0,
 	CFG_LOOPBACK
-};
+	
+} CFG_STATE;
 
-enum MSGSTRM_STATE
-{
+typedef enum									/* Message Stream State */
+{		
 	MS_STREAM = 0,
 	MS_DISABLE
-};
+	
+} MSGSTRM_STATE;
 
 /************************************************************************
  *	FUNCTION PROTOTYPES
  */
 void			term_Main			(void);
-void			term_Start			(enum MCP2515_STATUS res );
+void			term_Start			( CanStatus res );
 void			term_Commands		(void);
 void			term_CtrlReg		(void);
 void			term_ReadStatus		(void);
@@ -48,8 +52,8 @@ void			term_RxStatus		(void);
 void			term_IntFlag		(void);
 void			term_ErrorFlag		(void);
 void			term_TxBuffer		(void);
-void			term_BufTab			(uint8_t addr, uint8_t *data );
-void			term_RxMsg			(volatile CanMessage *msg);
+void			term_BufTab			( uint8_t addr, uint8_t *data );
+void			term_RxMsg			( CanMessage *msg);
 void			term_RxBuffer		(void);
 void			term_Filt			(void);
 void			term_Mask			(void);

@@ -4,25 +4,26 @@
 #include <avr/wdt.h>
 #include "terminal.h"
 #include "uart.h"
+#include "mcp2515reg.h"
 #include "mcp2515.h"
 #include "can.h"
 
 /************************************************************************
  *	GLOBAL VARIABLES
  */
-volatile enum TERM_STATE	state	= TERM_DISABLE;
-volatile enum CFG_STATE		cfg		= CFG_NORMAL;
-volatile enum MSGSTRM_STATE	strm	= MS_DISABLE; 
-enum TERM_STATE		state_copy;
-enum MSGSTRM_STATE  strm_copy;
+volatile	TERM_STATE			state	= TERM_DISABLE;
+volatile	CFG_STATE			cfg		= CFG_NORMAL;
+volatile	MSGSTRM_STATE		strm	= MS_DISABLE; 
+			TERM_STATE			state_copy;
+			MSGSTRM_STATE		strm_copy;
 
 /************************************************************************
  *	START SCREEN
  */
-void term_Start( enum MCP2515_STATUS res )
+void term_Start( CanStatus res )
 {
 	UART_TxStr_p( PSTR("\nNodeview v1.0 (c) Ayush Sinha\n") );
-	if( res == OK ){ UART_TxStr_p( PSTR("\nCAN Initialized\n") ); }
+	if( res == CAN_OK ){ UART_TxStr_p( PSTR("\nCAN Initialized\n") ); }
     else           { UART_TxStr_p( PSTR("\nCAN Initialization Failed\n") ); }
 	term_Commands();
 }
@@ -38,7 +39,8 @@ void term_Main(void)
 		
 	switch( state_copy ) {									/* terminal function call */
 																
-		case TERM_CANINIT	: wdt_enable(WDTO_15MS);break;
+		case TERM_CANINIT	: term_Start( CAN_Init(CAN_SPEED) );
+							  break;
 		case TERM_CTRLREG	: term_CtrlReg();		break;
 		case TERM_RXSTAT	: term_RxStatus();		break;
 		case TERM_READSTAT	: term_ReadStatus();	break;
@@ -414,7 +416,7 @@ void term_BufTab( uint8_t addr, uint8_t *data)
 /************************************************************************
  *	DISPLAY RECEIVED MESSAGE
  */
-void term_RxMsg	(volatile CanMessage *msg)
+void term_RxMsg	(CanMessage *msg)
 {
 	UART_TxStr_p( PSTR("Rcvd:\t") );
 	if( msg->ext == 0 ){

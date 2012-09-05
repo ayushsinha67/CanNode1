@@ -1,6 +1,6 @@
 
-#ifndef INIT_H_
-#define INIT_H_
+#ifndef _INIT_H_
+#define _INIT_H_
 
 /************************************************************************
  *	DEFINES

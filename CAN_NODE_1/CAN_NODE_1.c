@@ -20,8 +20,10 @@
 #include "spi.h"
 #include "adc.h"
 #include "uart.h"
+#include "mcp2515reg.h"
 #include "mcp2515.h"
 #include "can.h"
+#include "buffer.h"
 
 #ifdef TERMINAL
 #include "terminal.h"
@@ -41,18 +43,21 @@ int main(void)
 	GPIO_Init();										/* GPIO */
 	sei();												/* Enable Global Interrupts */
 															
-	enum MCP2515_STATUS res = CAN_Init(CAN_SPEED);		/* Start CAN */	
+	CanStatus res = CAN_Init(CAN_SPEED);		/* Start CAN */	
 	
 #ifdef TERMINAL		
 	term_Start(res);									/* Start Terminal */
 #endif
 	
 	Msg_Init();											/* Construct Data to be sent */
+	
+	//CanBuffer TxBuffer;									/* Construct Transmit Buffer */
+	//CAN_BufInit( &TxBuffer, CAN_TX_BUFFER_SIZE );		/* Initialize Buffer */
 
 /* ---------------------------*/
 	while(1){
 		
-		wdt_enable(WDTO_2S);							/* Enable Watchdog Timer for 1 second */
+		wdt_enable(WDTO_1S);							/* Enable Watchdog Timer for 2 second */
 		
 		/* ------------------------------------------ */
 		
@@ -67,8 +72,7 @@ int main(void)
 		
 		
 		/* ------------------------------------------ */
-		wdt_reset();									/* Reset Watchdog */
-		wdt_disable();
+		
 		
 		
 		
@@ -80,5 +84,9 @@ int main(void)
 #endif
 
     }
+	
+	wdt_reset();									/* Reset Watchdog */
+	wdt_disable();
+	
 	return 0;
 }

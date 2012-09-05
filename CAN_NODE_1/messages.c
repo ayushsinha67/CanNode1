@@ -16,20 +16,20 @@
 
 /* CAN Messages */
 CanMessage throttle, pot;
-volatile CanMessage buffer;
+CanMessage buffer;
 
 /* Message States */
-volatile enum MSG_STATE		msg1_state = WAIT,
-							msg2_state = WAIT,
-							msg3_state = WAIT,
-							msg4_state = WAIT,
-							msg5_state = WAIT,
-							msg6_state = WAIT,
-							msg7_state = WAIT,
-							msg_state_recv = WAIT;
+volatile MSG_STATE		msg_state1 = WAIT,
+						msg_state2 = WAIT,
+						msg_state3 = WAIT,
+						msg_state4 = WAIT,
+						msg_state5 = WAIT,
+						msg_state6 = WAIT,
+						msg_state7 = WAIT,
+						msg_state_recv = WAIT;
 
 #ifdef TERMINAL								
-extern volatile enum MSGSTRM_STATE	strm;
+extern volatile MSGSTRM_STATE	strm;
 #endif
 
 /************************************************************************
@@ -76,7 +76,7 @@ void SensorData (void)
  */
 void Msg_Recv (void)
 {
-	enum MSG_STATE	msg_state_recv_copy;						/* local variable */
+	MSG_STATE	msg_state_recv_copy;							/* local variable */
 	
 	ATOMIC_BLOCK( ATOMIC_FORCEON ){								/* Read Interrupt variables */
 		msg_state_recv_copy = msg_state_recv;
@@ -107,66 +107,66 @@ void Msg_Recv (void)
  */
 void Msg_Send (void)
 {
-	enum MSG_STATE	msg1_state_copy, msg2_state_copy,	/* local variables */
-					msg3_state_copy, msg4_state_copy,
-					msg5_state_copy, msg6_state_copy,
-					msg7_state_copy;			
+	MSG_STATE	msg_state1_copy, msg_state2_copy,		/* local variables */
+				msg_state3_copy, msg_state4_copy,
+				msg_state5_copy, msg_state6_copy,
+				msg_state7_copy;			
 	
 	ATOMIC_BLOCK( ATOMIC_FORCEON ){						/* Read Interrupt variables */
-			msg1_state_copy = msg1_state;
-			msg2_state_copy = msg2_state;
-			msg3_state_copy = msg3_state;
-			msg4_state_copy = msg4_state;
-			msg5_state_copy = msg5_state;
-			msg6_state_copy = msg6_state;
-			msg7_state_copy = msg7_state;
+			msg_state1_copy = msg_state1;
+			msg_state2_copy = msg_state2;
+			msg_state3_copy = msg_state3;
+			msg_state4_copy = msg_state4;
+			msg_state5_copy = msg_state5;
+			msg_state6_copy = msg_state6;
+			msg_state7_copy = msg_state7;
 		}
 		
 		/* ------------------------------------- */
-		if(	msg1_state_copy == SEND ){					/* Message 1 */
+		if(	msg_state1_copy == SEND ){					/* Message 1 */
 			CAN_SendMsg(&throttle);	
-			msg1_state_copy = WAIT;
+			msg_state1_copy = WAIT;
 		}		
 									
-		if(	msg2_state_copy == SEND ){					/* Message 2 */
+		if(	msg_state2_copy == SEND ){					/* Message 2 */
 			CAN_SendMsg(&pot);
-			msg2_state_copy = WAIT;
+			msg_state2_copy = WAIT;
 		}	
 		
-		if(	msg3_state_copy == SEND ){					/* Message 3 */
+		if(	msg_state3_copy == SEND ){					/* Message 3 */
 			//CAN_SendMsg(&pot);
-			msg3_state_copy = WAIT;
+			msg_state3_copy = WAIT;
 		}	
 		
-		if(	msg4_state_copy == SEND ){					/* Message 4 */
+		if(	msg_state4_copy == SEND ){					/* Message 4 */
 			//CAN_SendMsg(&pot);
-			msg4_state_copy = WAIT;
+			msg_state4_copy = WAIT;
 		}	
 		
-		if(	msg5_state_copy == SEND ){					/* Message 5 */
+		if(	msg_state5_copy == SEND ){					/* Message 5 */
 			//CAN_SendMsg(&pot);
-			msg5_state_copy = WAIT;
+			msg_state5_copy = WAIT;
 		}	
 		
-		if(	msg6_state_copy == SEND ){					/* Message 6 */
+		if(	msg_state6_copy == SEND ){					/* Message 6 */
 			//CAN_SendMsg(&pot);
-			msg6_state_copy = WAIT;
+			msg_state6_copy = WAIT;
 		}	
 		
-		if(	msg7_state_copy == SEND ){					/* Message 7 */
+		if(	msg_state7_copy == SEND ){					/* Message 7 */
 			//CAN_SendMsg(&pot);
-			msg7_state_copy = WAIT;
+			msg_state7_copy = WAIT;
 		}	
 		
 		/* ------------------------------------- */
 		ATOMIC_BLOCK( ATOMIC_FORCEON ){					/* Rewrite Interrupt variables */		
-			msg1_state = msg1_state_copy;
-			msg2_state = msg2_state_copy;
-			msg3_state = msg3_state_copy;
-			msg4_state = msg4_state_copy;
-			msg5_state = msg5_state_copy;
-			msg6_state = msg6_state_copy;
-			msg7_state = msg7_state_copy;
+			msg_state1 = msg_state1_copy;
+			msg_state2 = msg_state2_copy;
+			msg_state3 = msg_state3_copy;
+			msg_state4 = msg_state4_copy;
+			msg_state5 = msg_state5_copy;
+			msg_state6 = msg_state6_copy;
+			msg_state7 = msg_state7_copy;
 		}		
 }
 

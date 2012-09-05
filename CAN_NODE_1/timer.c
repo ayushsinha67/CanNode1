@@ -7,17 +7,23 @@
 /************************************************************************
  *	GLOBAL VARIABLES
  */
-volatile uint16_t	ms_tick = 0,
+volatile uint16_t	ms_tick	  = 0,
 					tick_msg1 = 0, 
 					tick_msg2 = 0,
 					tick_msg3 = 0,
 					tick_msg4 = 0,
 					tick_msg5 = 0,
 					tick_msg6 = 0,
-					tick_msg7= 0;
+					tick_msg7 = 0;
 					
-extern volatile enum MSG_STATE	msg1_state, msg2_state, msg3_state, msg4_state, 
-								msg5_state, msg6_state, msg7_state;
+extern volatile MSG_STATE	msg_state1, 
+							msg_state2, 
+							msg_state3, 
+							msg_state4, 
+							msg_state5, 
+							msg_state6, 
+							msg_state7;
+							
 /************************************************************************
  *	INITIALIZE TIMER
  *  
@@ -62,30 +68,30 @@ void SetTimer (uint16_t t)
 		ms_tick--;
 		
 	if( tick_msg1++ >= RATE_MSG1 ){					/* Message Tickers */
-		tick_msg1 = 0;	msg1_state = SEND;
+		tick_msg1 = 0;	msg_state1 = SEND;
 	}	
 	
 	if( tick_msg2++ >= RATE_MSG2 ){
-		tick_msg2 = 0;	msg2_state = SEND;
+		tick_msg2 = 0;	msg_state2 = SEND;			
 	}
 	
 	if( tick_msg3++ >= RATE_MSG3 ){
-		tick_msg3 = 0;	msg3_state = SEND;
+		tick_msg3 = 0;	msg_state3 = SEND;
 	}	
 	
 	if( tick_msg4++ >= RATE_MSG4 ){
-		tick_msg4 = 0;	msg4_state = SEND;
+		tick_msg4 = 0;	msg_state4 = SEND;
 	}	
 	
 	if( tick_msg5++ >= RATE_MSG5 ){
-		tick_msg5 = 0;	msg5_state = SEND;
+		tick_msg5 = 0;	msg_state5 = SEND;
 	}	
 	
 	if( tick_msg6++ >= RATE_MSG6 ){
-		tick_msg6 = 0;	msg6_state = SEND;
+		tick_msg6 = 0;	msg_state6 = SEND;
 	}	
 	
 	if( tick_msg7++ >= RATE_MSG7 ){
-		tick_msg7 = 0;	msg7_state = SEND;
+		tick_msg7 = 0;	msg_state7 = SEND;
 	}		
 }

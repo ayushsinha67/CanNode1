@@ -73,6 +73,9 @@
     <Compile Include="CAN_NODE_1.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="mcp2515reg.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="init.c">
       <SubType>compile</SubType>
     </Compile>

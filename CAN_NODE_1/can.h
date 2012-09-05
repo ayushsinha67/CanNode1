@@ -2,16 +2,16 @@
 #define _CAN_H
 
 #include <avr/io.h>
+#include "mcp2515.h"
 
 /************************************************************************
  *	DEFINES
  */
-/* Bus Speed */
-#define CAN_SPEED		CAN_250KBPS
 
-/* Filter Settings */
-#define FILTER_ENABLE	1
-#define MASK0			0x7FF		
+#define CAN_SPEED		CAN_250KBPS				/* Bus Speed */
+#define FILTER_ENABLE	1						/* Enable Filter */
+
+#define MASK0			0x7FF					/* Filter Settings */
 #define MASK1			0x7FF
 #define FILTER0			0x01
 #define FILTER1			0x02
@@ -23,19 +23,31 @@
 /************************************************************************
  *	DATA TYPES
  */
-typedef struct {
+typedef struct 
+{
 	uint32_t id; 
-	uint8_t  ext;
-	uint8_t  rtr; 
+	uint8_t  ext;								/* 0 = SID, 1 = EXIDE */
+	uint8_t  rtr;								/* 0 = NO RTR, 1 = RTR */
 	uint8_t  dlc;
-	uint8_t  data[8];
+	uint8_t  data[8];	
+	
 } CanMessage;
+
+/************************************************************************
+ *	ENUMERATIONS
+ */
+typedef enum
+{
+	CAN_OK = 0,
+	CAN_FAILED
+
+} CanStatus;
 
 /************************************************************************
  *	FUNCTION PROTOTYPES
  */
-enum MCP2515_STATUS CAN_Init			( uint8_t can_rate );
-enum MCP2515_STATUS	CAN_SendMsg			( const	   CanMessage *msg );
-enum MCP2515_STATUS CAN_ReadMsg			( volatile CanMessage *msg );
+CanStatus CAN_Init		( uint8_t can_rate );
+CanStatus CAN_SendMsg	( const CanMessage *msg );
+CanStatus CAN_ReadMsg	( CanMessage *msg );
 
 #endif
