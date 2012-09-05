@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include "global.h"
+#include "messages.h"
 #include "timer.h"
 
 /************************************************************************

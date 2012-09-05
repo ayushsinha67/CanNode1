@@ -13,7 +13,8 @@
 #include <avr/pgmspace.h>
 #include <util/atomic.h>
 #include <avr/wdt.h>
-#include "global.h"
+#include "init.h"
+#include "messages.h"
 #include "timer.h"
 #include "uart.h"
 #include "spi.h"
@@ -52,7 +53,8 @@ int main(void)
 	while(1){
 		
 		wdt_enable(WDTO_2S);							/* Enable Watchdog Timer for 1 second */
-		/* ------------------ */
+		
+		/* ------------------------------------------ */
 		
 		SensorData();									/* Get Data from Sensors */
 		
@@ -60,8 +62,7 @@ int main(void)
 		
 		/* ------------------------------------------ */		
 		
-		/* Receive Messages */
-		Msg_Recv();
+		Msg_Recv();										/* Receive Messages */
 				
 		
 		

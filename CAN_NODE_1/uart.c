@@ -8,11 +8,11 @@
  */
 void UART_Init (void)
 {
-    UCSRB |= (1 << RXEN) | (1 << TXEN);						// Turn on the transmission and reception circuitry
-    UCSRC |= (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);	// Use 8-bit character sizes
+    UCSRB |= (1 << RXEN) | (1 << TXEN);						/* Turn on the transmission and reception circuitry */
+    UCSRC |= (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);	/* Use 8-bit character sizes */
     UBRRL = BAUD_PRESCALE;
     UBRRH = (BAUD_PRESCALE >> 8);
-	UCSRB |= (1 << RXCIE);									// Enable the USART interrupt
+	UCSRB |= (1 << RXCIE);									/* Enable the USART interrupt */
 }
 
 /************************************************************************

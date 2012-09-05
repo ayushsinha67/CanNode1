@@ -5,7 +5,7 @@
  *	DEFINES
  */
 #define F_CPU			16000000
-#define UART_BAUDRATE	9600
+#define UART_BAUDRATE	1000000
 #define BAUD_PRESCALE	(((F_CPU / (UART_BAUDRATE * 16UL))) - 1)
 
 /************************************************************************
