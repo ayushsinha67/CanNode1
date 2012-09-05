@@ -7,19 +7,20 @@
 /************************************************************************
  *	DEFINES
  */
-#define CAN_TX_BUFFER_SIZE		5	
-#define CAN_RX_BUFFER_SIZE		5	
+#define CAN_TX_BUFFER_SIZE		8	
+#define CAN_RX_BUFFER_SIZE		8	
 
 /************************************************************************
  *	DATA TYPES
  */
-typedef struct 
+typedef struct
 {
-	CanMessage	*b;
-	uint8_t		head;
-	uint8_t		tail;
+	CanMessage	*buffer;
 	uint8_t		size;
-		
+	uint8_t     head;
+	uint8_t     tail;
+	uint8_t		count;
+
 } CanBuffer;
 
 /************************************************************************
@@ -28,6 +29,7 @@ typedef struct
 typedef enum 
 {
 	BUFFER_FULL = 0,
+	BUFFER_MID,
 	BUFFER_EMPTY
 	
 } BufferState;
@@ -35,10 +37,9 @@ typedef enum
 /************************************************************************
  *	FUNCTIONS
  */
-void		CAN_BufInit ( CanBuffer *buf, uint8_t size );
-void		CAN_BufEnq  ( CanBuffer *buf );
-void		CAN_BufDeq  ( CanBuffer *buf );
-
-
+void		    CAN_BufInit ( CanBuffer *buf, uint8_t size );
+void    		CAN_BufEnq  ( CanBuffer *buf, CanMessage *msg  );
+void	        CAN_BufDeq  ( CanBuffer *buf, CanMessage *msg );
+BufferState     CAN_BufState( CanBuffer *buf  );
 
 #endif 

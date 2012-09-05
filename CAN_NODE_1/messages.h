@@ -8,8 +8,8 @@
  */
 
 /* Message transmission Rate (in milliseconds) */				
-#define RATE_MSG1		500
-#define RATE_MSG2		100
+#define RATE_MSG1		100
+#define RATE_MSG2		10
 #define RATE_MSG3		300
 #define RATE_MSG4		400
 #define RATE_MSG5		100
@@ -30,22 +30,9 @@
 //#define PID_REPLY			  0x7E8
 
 /************************************************************************
- *	ENUMERATIONS
- */
-typedef enum 
-{
-	SEND = 0,
-	RECV,
-	WAIT
-	
-} MSG_STATE;
-
-/************************************************************************
  *	FUNCTIONS
  */
 void Msg_Init    (void);
-void Msg_Send	 (void);
-void Msg_Recv	 (void);
 void SensorData	 (void);
 
 #endif

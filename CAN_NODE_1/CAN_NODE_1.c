@@ -26,8 +26,25 @@
 #include "buffer.h"
 
 #ifdef TERMINAL
-#include "terminal.h"
+#include "terminal.h"							
+extern volatile MSGSTRM_STATE	strm;
 #endif
+
+/************************************************************************
+ *	GLOBALS
+ */
+/* Messages */
+volatile CanMessage rec;
+CanMessage throttle, pot;
+
+/* Buffer */
+CanBuffer  RxBuffer;
+CanBuffer  TxBuffer;
+
+/* Timer */
+volatile uint16_t	ms_tick	  = 0, tick_msg1 = 0, tick_msg2 = 0,
+					tick_msg3 = 0, tick_msg4 = 0, tick_msg5 = 0, 
+					tick_msg6 = 0, tick_msg7 = 0;
 
 /************************************************************************
  *	MAIN
@@ -35,59 +52,151 @@
 
 int main(void)
 {	 
-	ExtINT_Init();										/* External Interrupt */
-	Timer_Init();										/* Timers */
-	UART_Init();										/* UART */											
-	SPI_Init();											/* SPI */
-	ADC_Init();											/* ADC */
-	GPIO_Init();										/* GPIO */
+	CanMessage tmp;											/* Local Variables */
+	
+	ExtINT_Init();											/* External Interrupt */
+	Timer_Init();											/* Timers */
+	UART_Init();											/* UART */											
+	SPI_Init();												/* SPI */
+	ADC_Init();												/* ADC */
+	GPIO_Init();											/* GPIO */
 															
-	CanStatus res = CAN_Init(CAN_SPEED);		/* Start CAN */	
+	CanStatus res = CAN_Init(CAN_SPEED);					/* Start CAN */	
 	
 #ifdef TERMINAL		
-	term_Start(res);									/* Start Terminal */
+	term_Start(res);										/* Start Terminal */
 #endif
 	
-	CanBuffer TxBuffer, RxBuffer;						/* Construct Transmit Buffer */
-	//CAN_BufInit( &TxBuffer, CAN_TX_BUFFER_SIZE );		/* Initialize Buffer */
+	Msg_Init();												/* Construct Data to be sent */
 	
-	sei();												/* Enable Global Interrupts */
+	CAN_BufInit( &RxBuffer, CAN_RX_BUFFER_SIZE );			/* Initialize Receive Buffer */
+	CAN_BufInit( &TxBuffer, CAN_TX_BUFFER_SIZE );			/* Initialize Transmit Buffer */
 	
-	Msg_Init();											/* Construct Data to be sent */
+	
+	sei();													/* Enable Global Interrupts */
 
 /* ---------------------------*/
 	while(1){
 		
-		wdt_enable(WDTO_1S);							/* Enable Watchdog Timer for 2 second */
+		wdt_enable(WDTO_1S);								/* Enable Watchdog Timer for 2 second */
 		
 		/* ------------------------------------------ */
+		/* Send Messages */
 		
-		SensorData();									/* Get Data from Sensors */
+		SensorData();										/* Get Data from Sensors */
 		
-		Msg_Send();										/* Send Messages */
+		ATOMIC_BLOCK( ATOMIC_FORCEON ){
+			
+			if( CAN_BufState( &TxBuffer ) != BUFFER_EMPTY ){/* Check if empty */
+				
+				CAN_BufDeq( &TxBuffer, &tmp );				/* Dequeue */
+				CAN_SendMsg( &tmp );							/* Send */
+			}
+			
+		}										
 		
 		/* ------------------------------------------ */		
+		/* Receive Messages */
 		
-		Msg_Recv();										/* Receive Messages */
-				
+		ATOMIC_BLOCK( ATOMIC_FORCEON ){						/* Read Interrupt variables */
+			
+			if( CAN_BufState( &RxBuffer ) != BUFFER_EMPTY ){/* Check if not empty */
 		
+				CAN_BufDeq( &RxBuffer, &tmp );				/* Dequeue */
 		
+				if( strm == MS_STREAM )						/* Enable Terminal Message Stream */
+					term_RxMsg( &tmp );
+			}										
+		}				
+
 		/* ------------------------------------------ */
 		
-		
-		
-		
-		
-
-
 #ifdef TERMINAL											
-	term_Main();										/* TERMINAL FOR DEBUGGING */
+	term_Main();											/* TERMINAL FOR DEBUGGING */
 #endif
 
     }
 	
-	wdt_reset();									/* Reset Watchdog */
+	wdt_reset();											/* Reset Watchdog */
 	wdt_disable();
 	
 	return 0;
+}
+
+/************************************************************************
+ *	EXTERNAL INTERRUPT (RECEIVED MESSAGE)
+ */
+ISR(INT0_vect)
+{	
+	CAN_ReadMsg( &rec );								/* Read Message Received */
+	
+	if( CAN_BufState( &RxBuffer ) != BUFFER_FULL )		
+		CAN_BufEnq( &RxBuffer, &rec );					/* Enqueue to Receive Buffer */
+	
+}
+
+/************************************************************************
+ *	TIMER0 INTERRUPT (1 MS)
+ */ 
+ ISR(TIMER0_COMP_vect)
+{
+	if( ms_tick > 0 )									/* Decrement Ticker */
+		ms_tick--;
+	
+	/* Enqueue into Transmit Buffer */	
+	if( tick_msg1++ >= RATE_MSG1 ){						/* Message 1 */
+		
+		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+			CAN_BufEnq( &TxBuffer, &pot );
+		
+		tick_msg1 = 0;	
+	}	
+	
+	if( tick_msg2++ >= RATE_MSG2 ){						/* Message 2 */
+		
+		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+			CAN_BufEnq( &TxBuffer, &throttle );	
+		
+		tick_msg2 = 0;		
+	}
+	
+	if( tick_msg3++ >= RATE_MSG3 ){						/* Message 3 */
+		
+		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+			//CAN_BufEnq( &TxBuffer, &throttle );	
+		
+		tick_msg3 = 0;		
+	}
+	
+	if( tick_msg4++ >= RATE_MSG4 ){						/* Message 4 */
+		
+		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+			//CAN_BufEnq( &TxBuffer, &throttle );	
+		
+		tick_msg4 = 0;		
+	}
+	
+	if( tick_msg5++ >= RATE_MSG5 ){						/* Message 5 */
+		
+		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+			//CAN_BufEnq( &TxBuffer, &throttle );	
+		
+		tick_msg5 = 0;		
+	}
+	
+	if( tick_msg6++ >= RATE_MSG6 ){						/* Message 6 */
+		
+		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+			//CAN_BufEnq( &TxBuffer, &throttle );	
+		
+		tick_msg6 = 0;		
+	}
+	
+	if( tick_msg7++ >= RATE_MSG7 ){						/* Message 7 */
+		
+		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+			//CAN_BufEnq( &TxBuffer, &throttle );	
+		
+		tick_msg7 = 0;		
+	}
 }
