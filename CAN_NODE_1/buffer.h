@@ -7,7 +7,8 @@
 /************************************************************************
  *	DEFINES
  */
-#define CAN_TX_BUFFER_SIZE		5		
+#define CAN_TX_BUFFER_SIZE		5	
+#define CAN_RX_BUFFER_SIZE		5	
 
 /************************************************************************
  *	DATA TYPES

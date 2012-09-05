@@ -41,7 +41,6 @@ int main(void)
 	SPI_Init();											/* SPI */
 	ADC_Init();											/* ADC */
 	GPIO_Init();										/* GPIO */
-	sei();												/* Enable Global Interrupts */
 															
 	CanStatus res = CAN_Init(CAN_SPEED);		/* Start CAN */	
 	
@@ -49,10 +48,12 @@ int main(void)
 	term_Start(res);									/* Start Terminal */
 #endif
 	
-	Msg_Init();											/* Construct Data to be sent */
-	
-	//CanBuffer TxBuffer;									/* Construct Transmit Buffer */
+	CanBuffer TxBuffer, RxBuffer;						/* Construct Transmit Buffer */
 	//CAN_BufInit( &TxBuffer, CAN_TX_BUFFER_SIZE );		/* Initialize Buffer */
+	
+	sei();												/* Enable Global Interrupts */
+	
+	Msg_Init();											/* Construct Data to be sent */
 
 /* ---------------------------*/
 	while(1){

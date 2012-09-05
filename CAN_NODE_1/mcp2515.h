@@ -2,7 +2,6 @@
 #define _MCP2515_H
 
 #include <avr/io.h>
-#include "mcp2515reg.h"
 #include "can.h"
 
 /************************************************************************
