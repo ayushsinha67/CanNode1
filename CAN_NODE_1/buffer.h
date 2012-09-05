@@ -14,7 +14,7 @@
  */
 typedef struct 
 {
-	CanMessage	*buffer;
+	CanMessage	*b;
 	uint8_t		head;
 	uint8_t		tail;
 	uint8_t		size;
@@ -35,8 +35,8 @@ typedef enum
  *	FUNCTIONS
  */
 void		CAN_BufInit ( CanBuffer *buf, uint8_t size );
-BufferState CAN_BufEnq  ( CanBuffer *buf, CanMessage *msg );
-BufferState CAN_BufDeq  ( CanBuffer *buf, CanMessage *msg );
+void		CAN_BufEnq  ( CanBuffer *buf );
+void		CAN_BufDeq  ( CanBuffer *buf );
 
 
 

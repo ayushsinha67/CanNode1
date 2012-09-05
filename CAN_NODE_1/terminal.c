@@ -2,11 +2,13 @@
 #include <avr/pgmspace.h>
 #include <util/atomic.h>
 #include <avr/wdt.h>
-#include "terminal.h"
-#include "uart.h"
 #include "mcp2515reg.h"
 #include "mcp2515.h"
 #include "can.h"
+#include "terminal.h"
+#include "uart.h"
+
+
 
 /************************************************************************
  *	GLOBAL VARIABLES

@@ -2,13 +2,12 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <avr/wdt.h>
+#include "mcp2515.h"
+#include "can.h"
 #include "init.h"
 #include "messages.h"
 #include "terminal.h"
-#include "can.h"
-#include "mcp2515.h"
 #include "adc.h"
-#include "uart.h"
 
 /************************************************************************
  *	GLOBAL VARIABLES

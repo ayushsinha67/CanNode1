@@ -2,6 +2,7 @@
 #define _MCP2515_H
 
 #include <avr/io.h>
+#include "mcp2515reg.h"
 #include "can.h"
 
 /************************************************************************
@@ -126,6 +127,5 @@ void			mcp2515_WriteMaskFilt	( uint8_t addr, uint32_t m, uint8_t ext );
 void			mcp2515_ReadRxBuf		( CanMessage *m, uint8_t addr );
 void			mcp2515_WriteTxBuf		( const CanMessage *m, uint8_t addr );
 mcp2515Status   mcp2515_ChkFreeTxBuf	( uint8_t addr[] );
-
 
 #endif

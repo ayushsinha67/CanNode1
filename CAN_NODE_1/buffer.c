@@ -1,6 +1,7 @@
 #include <avr/io.h>
+#include "mcp2515.h"
+#include "can.h"
 #include "buffer.h"
-//#include "can.h"
 
 /************************************************************************
  *	BUFFER INITIALIZATION
@@ -15,9 +16,9 @@ void CAN_BufInit ( CanBuffer *buf, uint8_t size )
 /************************************************************************
  *	BUFFER ENQUEUE
  */
-BufferState CAN_BufEnq ( CanBuffer *buf, CanMessage *msg )
+void CAN_BufEnq ( CanBuffer *buf )
 {
-	buf->buffer[ buf->tail ] = *msg;					/* Add to tail */
+	//buf->buffer[ buf->tail ] = *msg;					/* Add to tail */
 	
 	if( buf->tail == ( buf->size - 1) )					/* Loop around */
 		buf->tail = 0;
@@ -29,13 +30,12 @@ BufferState CAN_BufEnq ( CanBuffer *buf, CanMessage *msg )
 /************************************************************************
  *	BUFFER DEQUEUE
  */
-BufferState CAN_BufDeq ( CanBuffer *buf, CanMessage *msg )
+void CAN_BufDeq ( CanBuffer *buf )
 {
-	*msg = buf->buffer[ buf->head ];					/* Copy from Head */
+	//*msg = buf->buffer[ buf->head ];					/* Copy from Head */
 	
 	if( buf->head == ( buf->size - 1 ) )				/* Loop around */
 		buf->head = 0;
 	else 
 		buf->head = buf->head + 1;						/* Increment tail pointer */
-
 }
