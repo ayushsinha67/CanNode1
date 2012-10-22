@@ -1,24 +1,30 @@
-#ifndef _CAN_H
-#define _CAN_H
+#ifndef CAN_H_
+#define CAN_H_
 
 #include <avr/io.h>
-#include "mcp2515.h"
+#include "messagedef.h"
 
 /************************************************************************
  *	DEFINES
  */
+/* CAN Initializations */
+#define CAN_SPEED			CAN_250KBPS				/* Bus Speed */
+#define CAN_MODE			CAN_2A					/* CAN Mode */
+#define CAN_2A				0						/* Standard Identifier	- 11 bit */
+#define CAN_2B				1						/* Extended Identifier  - 29 bit */
+#define CAN_FILTER_ENABLE	1						/* Enable: 1, Disable: 0 */
 
-#define CAN_SPEED		CAN_250KBPS				/* Bus Speed */
-#define FILTER_ENABLE	1						/* Enable Filter */
+/* Filter MASKS */
+#define MASK0				0x7FF
+#define MASK1				0x7FF
 
-#define MASK0			0x7FF					/* Filter Settings */
-#define MASK1			0x7FF
-#define FILTER0			0x01
-#define FILTER1			0x02
-#define FILTER2			0x03
-#define FILTER3			0x04
-#define FILTER4			0x05
-#define FILTER5			0x06
+/* Filters */
+#define FILTER0				PNEUM_ONLINE_ID
+#define FILTER1				0xFF
+#define FILTER2				0xFF
+#define FILTER3				0xFF
+#define FILTER4				0xFF
+#define FILTER5				0xFF
 
 /************************************************************************
  *	DATA TYPES
@@ -46,8 +52,10 @@ typedef enum
 /************************************************************************
  *	FUNCTION PROTOTYPES
  */
-CanStatus CAN_Init		( uint8_t can_rate );
-CanStatus CAN_SendMsg	( const CanMessage *msg );
-CanStatus CAN_ReadMsg	( CanMessage *msg );
+CanStatus CAN_Init			( const uint8_t can_rate );
+CanStatus CAN_SendMsg		( const CanMessage *msg );
+CanStatus CAN_ReadMsg		( volatile CanMessage *msg );
+void	  CAN_SetTxTimer	( void );
+uint16_t  CAN_GetTxTimer	( void );
 
 #endif

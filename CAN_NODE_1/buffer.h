@@ -1,7 +1,8 @@
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#ifndef BUFFER_H_
+#define BUFFER_H_
 
 #include <avr/io.h>
+#include "mcp2515.h"
 #include "can.h"
 
 /************************************************************************
@@ -37,9 +38,9 @@ typedef enum
 /************************************************************************
  *	FUNCTIONS
  */
-void		    CAN_BufInit ( CanBuffer *buf, uint8_t size );
-void    		CAN_BufEnq  ( CanBuffer *buf, CanMessage *msg  );
-void	        CAN_BufDeq  ( CanBuffer *buf, CanMessage *msg );
-BufferState     CAN_BufState( CanBuffer *buf  );
+void		    CAN_BufInit ( volatile CanBuffer *buf, uint8_t size );
+void    		CAN_BufEnq  ( volatile CanBuffer *buf, volatile CanMessage *msg  );
+void	        CAN_BufDeq  ( volatile CanBuffer *buf, volatile CanMessage *msg );
+BufferState     CAN_BufState( volatile CanBuffer *buf  );
 
 #endif 

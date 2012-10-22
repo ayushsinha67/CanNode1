@@ -1,5 +1,5 @@
-#ifndef _MCP2515_H
-#define _MCP2515_H
+#ifndef MCP2515_H_
+#define MCP2515_H_
 
 #include <avr/io.h>
 #include "can.h"
@@ -70,7 +70,7 @@
  *  SJW = 2 (normally), SJW = 1 ( 1 MBPS )
  */
 
-#define F_OSC			16000		/* KBPS */
+#define F_OSC			16000		/* KHz */
 #define PROPSEG			0x01		/* 2TQ - 1 */
 #define PHSEG1			0x30		/* 7TQ - 1 */
 #define PHSEG2			0x05		/* 6TQ - 1 */
@@ -101,7 +101,7 @@ typedef enum
  */
 
 /* SPI Driver */
-void	mcp2515_Reset			(void);
+void	mcp2515_Reset			( void );
 uint8_t mcp2515_Read			( const uint8_t address );
 void	mcp2515_ReadRegs		( const uint8_t address, uint8_t data[], const uint8_t n );
 void	mcp2515_Write			( const uint8_t address, const uint8_t data );
@@ -110,21 +110,22 @@ void    mcp2515_BitModify		( const uint8_t address, const uint8_t mask, const ui
 void	mcp2515_StrRXBUF		( const uint8_t buffer, uint8_t data[], const uint8_t n );
 void	mcp2515_LoadTXBUF		( const uint8_t buffer, const uint8_t data[], const uint8_t n );
 void    mcp2515_RTS				( const uint8_t buffer );
-uint8_t	mcp2515_ReadStatus		(void);
-uint8_t	mcp2515_RXStatus		(void);
+uint8_t	mcp2515_ReadStatus		( void );
+uint8_t	mcp2515_RXStatus		( void );
 
 /* Configuration */
 mcp2515Status	mcp2515_Init		( const uint8_t can_rate );
 mcp2515Status	mcp2515_SetMode		( const uint8_t mode );
 mcp2515Status	mcp2515_ConfigRate	( const uint16_t can_rate );
-void			mcp2515_ClrBuffers	(void);
-void			mcp2515_ConfigPins  (void);
-void			mcp2515_ConfigFilt  (void);
+void			mcp2515_ConfigFilt  ( const uint8_t mode );
+void			mcp2515_ClrBuffers	( void );
+void			mcp2515_ConfigPins  ( void );
+
 
 /* Buffer Message Access */
-void			mcp2515_WriteMaskFilt	( uint8_t addr, uint32_t m, uint8_t ext );
-void			mcp2515_ReadRxBuf		( CanMessage *m, uint8_t addr );
+void			mcp2515_WriteMaskFilt	( const uint8_t addr, const uint32_t m, const uint8_t ext );
+void			mcp2515_ReadRxBuf		( volatile CanMessage *m, uint8_t addr );
 void			mcp2515_WriteTxBuf		( const CanMessage *m, uint8_t addr );
-mcp2515Status   mcp2515_ChkFreeTxBuf	( uint8_t addr[] );
+mcp2515Status   mcp2515_ChkFreeTxBuf	( uint8_t *addr );
 
 #endif

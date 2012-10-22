@@ -1,7 +1,9 @@
 #include <avr/io.h>
 #include <util/delay.h>
-#include "mcp2515reg.h"
+#include <util/atomic.h>
 #include "mcp2515.h"
+#include "mcp2515reg.h"
+#include "can.h"
 #include "spi.h"
 #include "terminal.h"
 
@@ -179,7 +181,7 @@ mcp2515Status mcp2515_SetMode (const uint8_t mode)
  */
 mcp2515Status mcp2515_ConfigRate (const uint16_t can_rate)
 {
-	uint8_t BRP = ( F_OSC / ( 2 * 16 * can_rate ) ) - 1 ;	/* Baud Rate Prescalar */
+	uint8_t BRP = ( F_OSC / ( 2 * 16 * can_rate ) ) - 1 ;	/* Baud Rate Pre Scalar */
 	
 	switch( can_rate ){
 		
@@ -212,7 +214,7 @@ void mcp2515_ClrBuffers	(void)
 {
 	uint8_t data[14];
 	
-	for( uint8_t i = 0; i < 14; i++ )				/* Write zeroes */
+	for( uint8_t i = 0; i < 14; i++ )				/* Write zeros */
 		data[i] = 0;
 	
 	mcp2515_WriteRegs( TXB0SIDH, data, 14 );		/* Erase Buffers */
@@ -237,7 +239,7 @@ void mcp2515_ConfigPins  (void)
 /************************************************************************
  *	WRITE MASKS
  */
-void mcp2515_WriteMaskFilt ( uint8_t addr, uint32_t m, uint8_t ext )
+void mcp2515_WriteMaskFilt ( const uint8_t addr, const uint32_t m, const uint8_t ext )
 {
 	uint8_t buf[4];
 	
@@ -260,19 +262,19 @@ void mcp2515_WriteMaskFilt ( uint8_t addr, uint32_t m, uint8_t ext )
 /************************************************************************
  *	CONFIGURE FILTERS
  */
-void mcp2515_ConfigFilt (void)
+void mcp2515_ConfigFilt ( const uint8_t mode )
 {
 	/* Write Masks in Configuration mode */
-	mcp2515_WriteMaskFilt( RXM0SIDH, MASK0, 0 );		/* MASK 1 */
-	mcp2515_WriteMaskFilt( RXM1SIDH, MASK1, 0 );		/* MASK 2 */
-	
+	mcp2515_WriteMaskFilt( RXM0SIDH, MASK0, mode );		/* MASK 1 */
+	mcp2515_WriteMaskFilt( RXM1SIDH, MASK1, mode );		/* MASK 2 */
+
 	/* Write Filters in Configuration Mode */
-	mcp2515_WriteMaskFilt( RXF0SIDH, FILTER0, 0 );		/* Filter 0 */
-	mcp2515_WriteMaskFilt( RXF1SIDH, FILTER1, 0 );		/* Filter 1 */
-	mcp2515_WriteMaskFilt( RXF2SIDH, FILTER2, 0 );		/* Filter 2 */
-	mcp2515_WriteMaskFilt( RXF3SIDH, FILTER3, 0 );		/* Filter 3 */
-	mcp2515_WriteMaskFilt( RXF4SIDH, FILTER4, 0 );		/* Filter 4 */
-	mcp2515_WriteMaskFilt( RXF5SIDH, FILTER5, 0 );		/* Filter 5 */
+	mcp2515_WriteMaskFilt( RXF0SIDH, FILTER0, mode );	/* Filter 0 */
+	mcp2515_WriteMaskFilt( RXF1SIDH, FILTER1, mode );	/* Filter 1 */
+	mcp2515_WriteMaskFilt( RXF2SIDH, FILTER2, mode );	/* Filter 2 */
+	mcp2515_WriteMaskFilt( RXF3SIDH, FILTER3, mode );	/* Filter 3 */
+	mcp2515_WriteMaskFilt( RXF4SIDH, FILTER4, mode );	/* Filter 4 */
+	mcp2515_WriteMaskFilt( RXF5SIDH, FILTER5, mode );	/* Filter 5 */
 }
 /************************************************************************
  *	WRITE TRANSMIT BUFFER
@@ -309,7 +311,7 @@ void mcp2515_WriteTxBuf ( const CanMessage *m, uint8_t addr )
 /************************************************************************
  *	READ RECEIVE BUFFER
  */
-void mcp2515_ReadRxBuf ( CanMessage *m, uint8_t addr )
+void mcp2515_ReadRxBuf ( volatile CanMessage *m, uint8_t addr )
 {
 	uint32_t temp;
 	uint8_t  buf[13];
@@ -346,7 +348,7 @@ void mcp2515_ReadRxBuf ( CanMessage *m, uint8_t addr )
 /************************************************************************
  *	CHECK FREE TRANSMIT BUFFER
  */
-mcp2515Status mcp2515_ChkFreeTxBuf ( uint8_t addr[] )
+mcp2515Status mcp2515_ChkFreeTxBuf ( uint8_t *addr )
 {
 	/* [0] : load addr , [1] = RTS addr */
 	uint8_t status = mcp2515_ReadStatus();
@@ -372,31 +374,31 @@ mcp2515Status mcp2515_ChkFreeTxBuf ( uint8_t addr[] )
 /************************************************************************
  *	MCP2515 INITIALIZATION
  */
-mcp2515Status mcp2515_Init (const uint8_t can_rate)
+mcp2515Status mcp2515_Init ( const uint8_t can_rate )
 {
 	mcp2515_Reset();												/* Reset */ 
 	_delay_ms(1);													/* Settling time */
 	
-	if( mcp2515_SetMode ( MODE_CONFIG ) == MCP2515_FAILED )					/* Configuration Mode */
+	if( mcp2515_SetMode ( MODE_CONFIG ) == MCP2515_FAILED )			/* Configuration Mode */
 		return MCP2515_FAILED;	
 		
-	if( mcp2515_ConfigRate( can_rate ) == MCP2515_FAILED )  				/* Set CAN Speed */
+	if( mcp2515_ConfigRate( can_rate ) == MCP2515_FAILED )  		/* Set CAN Speed */
 		return MCP2515_FAILED;
 	
 	mcp2515_ClrBuffers();											/* Clear Rx/Tx Buffers */
-	mcp2515_ConfigFilt();											/* Set Filters */
 	mcp2515_ConfigPins();											/* Set Pins */
 	mcp2515_Write( CANINTE, RX0IE | RX1IE );						/* Activate Interrupts */
 	
-#if FILTER_ENABLE == 1												/* Filter Enabled */
+#if ( CAN_FILTER_ENABLE == 1 )										/* Filter Enabled */
+	mcp2515_ConfigFilt( CAN_MODE );									/* Set Filters */
 	mcp2515_Write( RXB0CTRL, RXB0_REC_ALL_VALID );					/* RXB0 Disable Rollover, Receive Filter Match */
 	mcp2515_Write( RXB1CTRL, RXB1_REC_ALL_VALID );					/* RXB1 Receive Filter Match */											
 #else																/* Filter Disabled */
-	mcp2515_Write( RXB0CTRL, RXB0_ROLLOVER | RXB0_REC_ANY );		/* RXB0 Enable Rollover, Receive All */
+	mcp2515_Write( RXB0CTRL, RXB0_REC_ANY );						/* No RXB0 Enable Rollover, Receive All */
 	mcp2515_Write( RXB1CTRL, RXB1_REC_ANY );						/* RXB1 Receive All */
 #endif
 
-	if ( mcp2515_SetMode( MODE_NORMAL ) == MCP2515_FAILED)					/* Normal Mode */
+	if ( mcp2515_SetMode( MODE_NORMAL ) == MCP2515_FAILED)			/* Normal Mode */
 		return MCP2515_FAILED;
 
 	return MCP2515_OK;

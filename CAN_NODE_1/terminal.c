@@ -1,14 +1,11 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <util/atomic.h>
-#include <avr/wdt.h>
-#include "mcp2515reg.h"
-#include "mcp2515.h"
-#include "can.h"
 #include "terminal.h"
 #include "uart.h"
-
-
+#include "mcp2515reg.h"
+#include "mcp2515.h"
+//#include "can.h"
 
 /************************************************************************
  *	GLOBAL VARIABLES
@@ -16,8 +13,8 @@
 volatile	TERM_STATE			state	= TERM_DISABLE;
 volatile	CFG_STATE			cfg		= CFG_NORMAL;
 volatile	MSGSTRM_STATE		strm	= MS_DISABLE; 
-			TERM_STATE			state_copy;
-			MSGSTRM_STATE		strm_copy;
+TERM_STATE		state_copy;
+MSGSTRM_STATE	strm_copy;
 
 /************************************************************************
  *	START SCREEN
@@ -25,14 +22,18 @@ volatile	MSGSTRM_STATE		strm	= MS_DISABLE;
 void term_Start( CanStatus res )
 {
 	UART_TxStr_p( PSTR("\nNodeview v1.0 (c) Ayush Sinha\n") );
-	if( res == CAN_OK ){ UART_TxStr_p( PSTR("\nCAN Initialized\n") ); }
-    else           { UART_TxStr_p( PSTR("\nCAN Initialization Failed\n") ); }
-	term_Commands();
+	
+	if( res == CAN_OK )
+		UART_TxStr_p( PSTR("\nCAN Initialized\n") ); 
+    else 
+		UART_TxStr_p( PSTR("\nCAN Initialization Failed\n") ); 
+	
+	term_Commands();										/* Show commands */
 }
 /************************************************************************
  *	MAIN FUNCTION ROUTINE
  */
-void term_Main(void)
+void term_Main( void )
 {
 	ATOMIC_BLOCK( ATOMIC_FORCEON ){							/* Read terminal state */
 	state_copy = state;
@@ -211,7 +212,6 @@ void term_RxStatus(void)
 /************************************************************************
  *	DISPLAY INTERRUPT FLAGS
  */
-
 void term_IntFlag(void)
 {
 	uint8_t data = mcp2515_Read( CANINTF );
@@ -280,7 +280,6 @@ void term_TxBuffer(void)
 	mcp2515_ReadRegs( TXB2SIDH, data, 13 );
 	term_BufTab( TXB2SIDH, data );	
 }
-
 
 /************************************************************************
  *	DISPLAY RECEIVE BUFFER
