@@ -25,6 +25,10 @@
       <ToolNumber xmlns="">
       </ToolNumber>
     </com_atmel_avrdbg_tool_simulator>
+    <KeepTimersRunning>true</KeepTimersRunning>
+    <OverrideVtor>false</OverrideVtor>
+    <OverrideVtorValue />
+    <eraseonlaunchrule>0</eraseonlaunchrule>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -76,10 +80,10 @@
     <Compile Include="adc.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="buffer.c">
+    <Compile Include="can_buffer.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="buffer.h">
+    <Compile Include="can_buffer.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="can.c">
@@ -137,6 +141,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="uart.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="uart_buffer.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="uart_buffer.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

@@ -28,8 +28,11 @@ typedef enum
 } ButtonState;
 
 /************************************************************************
- *	PNEUMATIC COMMANDS
+ *	FUNCTION PROTOTYPES
  */
-void Pneumatic_SendCommand( void );
+void Debounce_UpShift	( void );
+void Debounce_Downshift	( void );
+void DebTimer_Upshift	( void );
+void DebTimer_Downshift	( void );
 
 #endif /* PNEUMATIC_H_ */

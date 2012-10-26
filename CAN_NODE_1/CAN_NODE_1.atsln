@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# AvrStudio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "CAN_NODE_1", "CAN_NODE_1.cproj", "{EAE83382-5813-4849-B192-928E7770E4A9}"
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "CAN_NODE_3", "..\CAN_NODE_3\CAN_NODE_3.cproj", "{6618EAB6-0CF0-47AF-9E4E-E587066286A6}"
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "CAN_NODE_2", "..\CAN_NODE_2\CAN_NODE_2.cproj", "{D2935297-75B5-403B-9CAA-454B4AF19944}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +17,14 @@ Global
 		{EAE83382-5813-4849-B192-928E7770E4A9}.Debug|AVR.Build.0 = Debug|AVR
 		{EAE83382-5813-4849-B192-928E7770E4A9}.Release|AVR.ActiveCfg = Release|AVR
 		{EAE83382-5813-4849-B192-928E7770E4A9}.Release|AVR.Build.0 = Release|AVR
+		{6618EAB6-0CF0-47AF-9E4E-E587066286A6}.Debug|AVR.ActiveCfg = Debug|AVR
+		{6618EAB6-0CF0-47AF-9E4E-E587066286A6}.Debug|AVR.Build.0 = Debug|AVR
+		{6618EAB6-0CF0-47AF-9E4E-E587066286A6}.Release|AVR.ActiveCfg = Release|AVR
+		{6618EAB6-0CF0-47AF-9E4E-E587066286A6}.Release|AVR.Build.0 = Release|AVR
+		{D2935297-75B5-403B-9CAA-454B4AF19944}.Debug|AVR.ActiveCfg = Debug|AVR
+		{D2935297-75B5-403B-9CAA-454B4AF19944}.Debug|AVR.Build.0 = Debug|AVR
+		{D2935297-75B5-403B-9CAA-454B4AF19944}.Release|AVR.ActiveCfg = Release|AVR
+		{D2935297-75B5-403B-9CAA-454B4AF19944}.Release|AVR.Build.0 = Release|AVR
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

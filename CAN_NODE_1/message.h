@@ -8,7 +8,7 @@
  *	DEFINES
  */
 /* Message Sending Rate (ms) */				
-#define RATE_MSG1				100
+#define RATE_MSG1				10
 #define RATE_MSG2				50
 #define RATE_MSG3				300
 #define RATE_MSG4				400

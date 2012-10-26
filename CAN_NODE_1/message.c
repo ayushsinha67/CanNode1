@@ -4,13 +4,13 @@
 #include "messagedef.h"
 #include "mcp2515.h"
 #include "can.h"
+#include "can_buffer.h"
 #include "init.h"
-#include "adc.h"
-#include "buffer.h"
 
 #if ( TERMINAL == 1 )
 #include "uart.h"
 #include "terminal.h"
+#include "adc.h"
 #endif
 
 /************************************************************************
@@ -68,7 +68,7 @@ void Msg_Chk( CanMessage *msg )
  */
 void Pneumatic_SendMsg( uint8_t msg )
 {
-	if( CAN_BufState( &TxBuffer ) != BUFFER_FULL ){
+	if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL ){
 		PneumaticShift.data[0] = msg;
 		CAN_BufEnq( &TxBuffer, &PneumaticShift );	
 	}	
@@ -79,22 +79,13 @@ void Pneumatic_SendMsg( uint8_t msg )
  */
 void Pneumatic_RecMsg( CanMessage *m )
 {
-	/* Pneumatic On line, Send to LCD */
-	if( m->data[0] == PNEUM_ONLINE ){
-		
-#if ( TERMINAL == 1)
-		//UART_TxStr_p( PSTR("PNEUMATIC ONLINE\n") );
-#endif
-
-	}	
-		
-	else if ( m->data[0] == PNEUM_OFFLINE ){
-		
-#if ( TERMINAL == 1 )
-		//UART_TxStr_p( PSTR("PNEUMATIC OFFLINE\n") );
-#endif
-	}	
+	if( m->data[0] == PNEUM_ONLINE ){								/* Pneumatic On line, Send to LCD */
 	
 	/* Parse to LCD */
+
+	}	
+	else if ( m->data[0] == PNEUM_OFFLINE ){
+	
+	}		
 }
 

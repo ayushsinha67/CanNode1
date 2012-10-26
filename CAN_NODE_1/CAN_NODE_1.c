@@ -20,30 +20,31 @@
 #include "mcp2515reg.h"
 #include "mcp2515.h"
 #include "can.h"
-#include "buffer.h"
+#include "can_buffer.h"
 #include "messagedef.h"
 #include "message.h"
 #include "pneumatic.h"
 
 #if ( TERMINAL == 1 )
 #include "uart.h"
+#include "uart_buffer.h"
 #include "terminal.h"							
 extern volatile MSGSTRM_STATE	strm;
+volatile UartBuffer UART_RxBuffer;
 #endif
 
 /************************************************************************
  *	GLOBALS
  */
+/* CAN Buffer */
+volatile CanBuffer  RxBuffer;
+volatile CanBuffer  TxBuffer;
+
 /* Messages */
 volatile CanMessage rec;
 CanMessage PneumaticShift, Oil, Brake;
 
-/* Buffer */
-volatile CanBuffer  RxBuffer;
-volatile CanBuffer  TxBuffer;
-
 /* Timer */
-volatile uint16_t	tx_timer = 0;
 volatile uint16_t	tick_msg1 = 0, tick_msg2 = 0,
 					tick_msg3 = 0, tick_msg4 = 0, tick_msg5 = 0, 
 					tick_msg6 = 0, tick_msg7 = 0;
@@ -76,44 +77,40 @@ int main(void)
 	
 #if ( TERMINAL == 1 )		
 	term_Start(res);										/* Start Terminal */
+	UART_BufInit( &UART_RxBuffer, UART_RX_BUFFER_SIZE );	/* UART receive buffer */
 #endif
 	
 	Msg_Init();												/* Construct Messages to be sent */
 	
 	CAN_BufInit( &RxBuffer, CAN_RX_BUFFER_SIZE );			/* Initialize Receive Buffer */
 	CAN_BufInit( &TxBuffer, CAN_TX_BUFFER_SIZE );			/* Initialize Transmit Buffer */
-	
+
 	sei();													/* Enable Global Interrupts */
 	
-	wdt_enable(WDTO_1S);									/* Enable Watchdog Timer for 1 second */
+	wdt_enable(WDTO_1S);									/* Enable Watchdog Timer */
 
-/* ---------------------------*/
+/* --------------- LOOP FOREVER ----------------------*/
 	while(1){
 				
-		/* ------------------------------------------ */
-		/* Send Messages */
+		//Get Data
 		
-		// Get Data
-		
+		/* Send Messages ---------------------------- */
 		ATOMIC_BLOCK( ATOMIC_FORCEON ){
 			
-			if( CAN_BufState( &TxBuffer ) != BUFFER_EMPTY ){/* Check if empty */
+			if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_EMPTY ){
 				
-				CAN_BufDeq( &TxBuffer, &tmp );				/* Dequeue */
+				CAN_BufDeq( &TxBuffer, &tmp );				/* Dequeue Transmit Buffer */
 				CAN_SendMsg( &tmp );						/* Send */
 			}
-			
 		}										
-		
-		/* ------------------------------------------ */		
-		/* Receive Messages */
-		
-		ATOMIC_BLOCK( ATOMIC_FORCEON ){						/* Read Interrupt variables */
-			
-			if( CAN_BufState( &RxBuffer ) != BUFFER_EMPTY ){/* Check if not empty */
-		
-				CAN_BufDeq( &RxBuffer, &tmp );				/* Dequeue */
 				
+		/* Receive Messages ------------------------- */
+		
+		ATOMIC_BLOCK( ATOMIC_FORCEON ){						
+			
+			if( CAN_BufState( &RxBuffer ) != CAN_BUFFER_EMPTY ){
+		
+				CAN_BufDeq( &RxBuffer, &tmp );				/* Dequeue Receive Buffer */
 				Msg_Chk( &tmp );							/* Check Received Message */		
 
 #if ( TERMINAL == 1 )		
@@ -126,13 +123,10 @@ int main(void)
 		/* ------------------------------------------ */
 		
 #if ( TERMINAL == 1 )											
-	term_Main();											/* TERMINAL FOR DEBUGGING */
+		term_Main();										/* TERMINAL FOR DEBUGGING */
 #endif
-	
-	wdt_reset();											/* Reset Watchdog */
+		wdt_reset();										/* Reset Watchdog */
     }
-	//wdt_disable();
-	
 	return 0;
 }
 
@@ -143,9 +137,9 @@ ISR(INT0_vect)
 {	
 	CAN_ReadMsg( &rec );									/* Read Message Received */
 	
-	if( CAN_BufState( &RxBuffer ) != BUFFER_FULL )		
+	if( CAN_BufState( &RxBuffer ) != CAN_BUFFER_FULL ){	
 		CAN_BufEnq( &RxBuffer, &rec );						/* Enqueue to Receive Buffer */
-	
+	}	
 }
  
 /************************************************************************
@@ -153,21 +147,18 @@ ISR(INT0_vect)
  */ 
  ISR(TIMER0_COMP_vect)
 {
-	if( tx_timer > 0 )										/* Transmit decrement timer  */
-		tx_timer--;
-	
-	/* Enqueue into Transmit Buffer */	
+	/* Enqueue into Transmit Buffer ------------------------------------ */	
 	if( tick_msg1++ >= RATE_MSG1 ){							/* Message 1 */
 		
-		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+		if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL )
 			CAN_BufEnq( &TxBuffer, &Oil );
-		
+			
 		tick_msg1 = 0;	
 	}	
 	
 	if( tick_msg2++ >= RATE_MSG2 ){							/* Message 2 */
 		
-		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+		if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL )
 			CAN_BufEnq( &TxBuffer, &Brake );	
 		
 		tick_msg2 = 0;		
@@ -175,7 +166,7 @@ ISR(INT0_vect)
 	
 	if( tick_msg3++ >= RATE_MSG3 ){							/* Message 3 */
 		
-		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+		if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL )
 			//CAN_BufEnq( &TxBuffer, &throttle );	
 		
 		tick_msg3 = 0;		
@@ -183,7 +174,7 @@ ISR(INT0_vect)
 	
 	if( tick_msg4++ >= RATE_MSG4 ){							/* Message 4 */
 		
-		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+		if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL )
 			//CAN_BufEnq( &TxBuffer, &throttle );	
 		
 		tick_msg4 = 0;		
@@ -191,7 +182,7 @@ ISR(INT0_vect)
 	
 	if( tick_msg5++ >= RATE_MSG5 ){							/* Message 5 */
 		
-		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+		if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL )
 			//CAN_BufEnq( &TxBuffer, &throttle );	
 		
 		tick_msg5 = 0;		
@@ -199,7 +190,7 @@ ISR(INT0_vect)
 	
 	if( tick_msg6++ >= RATE_MSG6 ){							/* Message 6 */
 		
-		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+		if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL )
 			//CAN_BufEnq( &TxBuffer, &throttle );	
 		
 		tick_msg6 = 0;		
@@ -207,7 +198,7 @@ ISR(INT0_vect)
 	
 	if( tick_msg7++ >= RATE_MSG7 ){							/* Message 7 */
 		
-		if( CAN_BufState( &TxBuffer ) != BUFFER_FULL )
+		if( CAN_BufState( &TxBuffer ) != CAN_BUFFER_FULL )
 			//CAN_BufEnq( &TxBuffer, &throttle );	
 		
 		tick_msg7 = 0;		
@@ -215,133 +206,27 @@ ISR(INT0_vect)
 }
 
 /************************************************************************
- *	INT1 INTERRUPT - PNEUMATIC BUTTON 1
+ *	INT1 INTERRUPT - UPSHIFT
  */
 ISR( INT1_vect )
 {	
-	/* Noise detected, since next edge is less than debounce time. */
-	if( ( button_int1 == BUTTON_CHECK_PRESSED ) && ( debounce_ticker1 < DEBOUNCE_TIME ) ){		
-		button_int1 = BUTTON_RELEASED;	
-	}
-	
-	/* Noise detected, since next edge is less than debounce time */
-	if( ( button_int1 == BUTTON_CHECK_RELEASED ) && ( debounce_ticker1 < DEBOUNCE_TIME ) ){	
-		button_int1 = BUTTON_PRESSED;
-	}	
-	
-	/* Start incrementing timer if key was released and is now pressed. This can be noise or valid */
-	if( button_int1 == BUTTON_RELEASED ){					
-		debounce_ticker1 = 0;
-		button_int1 = BUTTON_CHECK_PRESSED;		
-	}	
-	
-	/* Start incrementing timer if key was pressed. This is the trailing noise edge. */
-	if( button_int1 == BUTTON_PRESSED ){
-		debounce_ticker1 = 0;
-		button_int1 = BUTTON_CHECK_RELEASED;	
-	}
+	Debounce_UpShift();
 }
 
 /************************************************************************
- *	INT2 INTERRUPT - PNEUMATIC BUTTON 2
+ *	INT2 INTERRUPT - DOWNSHIFT
  */
 ISR( INT2_vect )
 {	
-	/* Noise detected, since next edge is less than debounce time. */
-	if( ( button_int2 == BUTTON_CHECK_PRESSED ) && ( debounce_ticker2 < DEBOUNCE_TIME ) ){	
-		button_int2 = BUTTON_RELEASED;	
-	}
-	
-	/* Noise detected, since next edge is less than debounce time */
-	if( ( button_int2 == BUTTON_CHECK_RELEASED ) && ( debounce_ticker2 < DEBOUNCE_TIME ) ){	
-		button_int2 = BUTTON_PRESSED;
-	}	
-	
-	/* Start incrementing timer if key was released and is now pressed. This can be noise or valid */
-	if( button_int2 == BUTTON_RELEASED ){					
-		debounce_ticker2 = 0;
-		button_int2 = BUTTON_CHECK_PRESSED;		
-	}	
-	
-	/* Start incrementing timer if key was pressed. This is the trailing noise edge. */
-	if( button_int2 == BUTTON_PRESSED ){
-		debounce_ticker2 = 0;
-		button_int2 = BUTTON_CHECK_RELEASED;	
-	}
+	Debounce_Downshift();
 }
 
 /************************************************************************
  *	TIMER2 INTERRUPT (1 MS)
  */ 
  ISR(TIMER2_COMP_vect)
- {
-	/* DEBOUNCE INT1 -------------------------------------------- */
-	
-	/* Increment ticker if signal is high and in "pressed" check state */	
-	if( ( button_int1 == BUTTON_CHECK_PRESSED ) && ( CHK( PIN_SHIFT_BUTTON_UP, 1<<PIN_SHIFT_UP ) ) ){
-		debounce_ticker1++;
-	}
-	
-	/* Increment ticker if signal is low and in "released" check state */
-	if( ( button_int1 == BUTTON_CHECK_RELEASED ) && ( !CHK( PIN_SHIFT_BUTTON_UP, 1<<PIN_SHIFT_UP ) ) ){
-		debounce_ticker1++;	
-	}
-	
-	/* If there was no trailing noise edge on button release */
-	if( ( button_int1 == BUTTON_PRESSED ) && ( !CHK( PIN_SHIFT_BUTTON_UP, 1<<PIN_SHIFT_UP ) ) ){
-		
-		button_int1 = BUTTON_CHECK_RELEASED;
-		debounce_ticker1 = 0;
-	}
-	
-	/* A valid button press is detected */	
-	if( ( button_int1 == BUTTON_CHECK_PRESSED ) && ( debounce_ticker1 >= DEBOUNCE_TIME ) ){
-		
-		button_int1 = BUTTON_PRESSED;
-		debounce_ticker1 = 0;
-		
-		/* BUTTON IS PRESSED */
-		UART_TxStr_p( PSTR("UP SHIFT\n") );
-		Pneumatic_SendMsg ( PNEUM_MSG_UPSHIFT );					/* Send Message */
-	}
-	
-	/* A valid button release is detected */
-	if( ( button_int1 == BUTTON_CHECK_RELEASED ) && ( debounce_ticker1 >= DEBOUNCE_TIME ) ){
-		button_int1 = BUTTON_RELEASED;
-	} 	 
-	 	
-	/* DEBOUNCE INT2 ----------------------------------------- */
-		
-	/* Increment ticker if signal is high and in "pressed" check state */
-	if( ( button_int2 == BUTTON_CHECK_PRESSED ) && ( CHK( PIN_SHIFT_BUTTON_DOWN, 1<<PIN_SHIFT_DOWN ) ) ){
-		debounce_ticker2++;
-	}
-	
-	/* Increment ticker if signal is low and in "released" check state */
-	if( ( button_int2 == BUTTON_CHECK_RELEASED ) && ( !CHK( PIN_SHIFT_BUTTON_DOWN, 1<<PIN_SHIFT_DOWN ) ) ){
-		debounce_ticker2++;	
-	}
-	
-	/* If there was no trailing noise edge on button release */
-	if( ( button_int2 == BUTTON_PRESSED ) && ( !CHK( PIN_SHIFT_BUTTON_DOWN, 1<<PIN_SHIFT_DOWN ) ) ){
-		button_int2 = BUTTON_CHECK_RELEASED;
-		debounce_ticker2 = 0;
-	}
-	
-	/* A valid button press is detected */		
-	if( ( button_int2 == BUTTON_CHECK_PRESSED ) && ( debounce_ticker2 >= DEBOUNCE_TIME ) ){
-		
-		button_int2 = BUTTON_PRESSED;
-		debounce_ticker2 = 0;
-		
-		/* BUTTON IS PRESSED */				
-		UART_TxStr_p( PSTR("DOWN SHIFT\n") );
-		Pneumatic_SendMsg( PNEUM_MSG_DOWNSHIFT );					/* Send Message */	
-	}
-	
-	/* A valid button release is detected */
-	if( ( button_int2 == BUTTON_CHECK_RELEASED ) && ( debounce_ticker2 >= DEBOUNCE_TIME ) ){
-		button_int2 = BUTTON_RELEASED;
-	} 	 
+ {	
+	DebTimer_Upshift();
+	DebTimer_Downshift();
  }
  

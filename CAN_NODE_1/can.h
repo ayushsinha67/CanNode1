@@ -8,7 +8,7 @@
  *	DEFINES
  */
 /* CAN Initializations */
-#define CAN_SPEED			CAN_250KBPS				/* Bus Speed */
+#define CAN_SPEED			CAN_1MBPS				/* Bus Speed */
 #define CAN_MODE			CAN_2A					/* CAN Mode */
 #define CAN_2A				0						/* Standard Identifier	- 11 bit */
 #define CAN_2B				1						/* Extended Identifier  - 29 bit */
@@ -20,8 +20,8 @@
 
 /* Filters */
 #define FILTER0				PNEUM_ONLINE_ID
-#define FILTER1				0xFF
-#define FILTER2				0xFF
+#define FILTER1				OIL_ID
+#define FILTER2				BRAKE_ID
 #define FILTER3				0xFF
 #define FILTER4				0xFF
 #define FILTER5				0xFF
@@ -32,8 +32,8 @@
 typedef struct 
 {
 	uint32_t id; 
-	uint8_t  ext;								/* 0 = SID, 1 = EXIDE */
-	uint8_t  rtr;								/* 0 = NO RTR, 1 = RTR */
+	uint8_t  ext;									/* 0 = SID, 1 = EXIDE */
+	uint8_t  rtr;									/* 0 = NO RTR, 1 = RTR */
 	uint8_t  dlc;
 	uint8_t  data[8];	
 	
@@ -55,7 +55,5 @@ typedef enum
 CanStatus CAN_Init			( const uint8_t can_rate );
 CanStatus CAN_SendMsg		( const CanMessage *msg );
 CanStatus CAN_ReadMsg		( volatile CanMessage *msg );
-void	  CAN_SetTxTimer	( void );
-uint16_t  CAN_GetTxTimer	( void );
 
 #endif
